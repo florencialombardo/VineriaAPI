@@ -1,0 +1,6 @@
+@VineriaAPI_HostAddress = http://localhost:5289
+
+GET {{VineriaAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
