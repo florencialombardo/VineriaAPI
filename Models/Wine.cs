@@ -1,7 +1,11 @@
-﻿namespace VineriaAPI.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace VineriaAPI.Models
 {
     public class Wine
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Variety { get; set; } = string.Empty;
@@ -19,18 +23,7 @@
         }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public void AddStock(int amount)
-        {
-            if (amount <= 0) throw new ArgumentException("La cantidad a añadir debe ser mayor a 0.");
-            Stock += amount;
-        }
-
-        public void RemoveStock(int amount)
-        {
-            if (amount <= 0) throw new ArgumentException("La cantidad a reducir debe ser mayor a 0.");
-            if (Stock - amount < 0) throw new InvalidOperationException("No hay suficiente stock disponible.");
-            Stock -= amount;
-        }
+        
     }
 
 }

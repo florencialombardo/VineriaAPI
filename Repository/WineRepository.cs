@@ -1,22 +1,41 @@
-﻿using VineriaAPI.Models;
+﻿using VineriaAPI.Data;
+using VineriaAPI.Models;
 
 namespace VineriaAPI.Repository
 {
-    public class WineRepository
+    public class WineRepository 
     {
-        private readonly List<Wine> _wines = new();
-        private readonly List<User> _users = new();
+        private readonly ApplicationDbContext _context;
 
-        // Añadir un nuevo vino
-        public void AddWine(Wine wine) => _wines.Add(wine);
+        public WineRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-        // Consultar todos los vinos
-        public IEnumerable<Wine> GetWines() => _wines;
+        public List<Wine> GetAllWines() 
+        { 
+            return _context.Wines.ToList();
+        }
 
-        // Consultar un vino por nombre
-        public Wine? GetWineByName(string name) => _wines.FirstOrDefault(w => w.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        public async Task<Wine> GetWineById(int id)
+        {
+            return await _context.Wines.FindAsync(id);
+        }
 
-        // Añadir un nuevo usuario
-        public void AddUser(User user) => _users.Add(user);
+        public async Task AddWine(Wine wine)
+        {
+            await _context.Wines.AddAsync(wine);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateWineStock(int id, int newStock)
+        {
+            var wine = await _context.Wines.FindAsync(id);
+            if (wine != null)
+            {
+                wine.Stock = newStock;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }
