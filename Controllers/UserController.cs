@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Data.Entities;
+using Data.Repository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using VineriaAPI.Models;
-using VineriaAPI.Repository;
+using Services.DTOs;
+using Services.Services;
 
 namespace VineriaAPI.Controllers
 {
@@ -9,19 +11,29 @@ namespace VineriaAPI.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly WineRepository _repository;
+        private readonly IUserService _userService;
 
-        public UserController(WineRepository repository)
+        public UserController(IUserService userService)
         {
-            _repository = repository;
+            _userService = userService;
         }
 
         [HttpPost]
-        public IActionResult AddUser(User user)
+        public IActionResult RegisterUser([FromBody] UserDTO userDto)
         {
-            _repository.AddUser(user);
+            _userService.RegisterUser(userDto);
+            return Ok("User registered successfully");
+        }
+
+        [HttpGet("{mail}")]
+        public IActionResult GetUser(string mail)
+        {
+            var user = _userService.GetUserByMail(mail);
+            if (user == null) return NotFound("User not found");
             return Ok(user);
         }
+
+
     }
 
 }

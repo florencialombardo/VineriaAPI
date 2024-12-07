@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Data.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using VineriaAPI.Models;
-using VineriaAPI.Repository;
+using Services.Services;
+using Data.Repository;
+using Services.DTOs;
 
 namespace VineriaAPI.Controllers
 {
@@ -9,71 +11,60 @@ namespace VineriaAPI.Controllers
     [ApiController]
     public class WineController : ControllerBase
     {
-        private readonly WineService _wineService;
+        private readonly IWineService _wineService;
 
-        public WineController(WineService wineService)
+        public WineController(IWineService wineService)
         {
             _wineService = wineService;
         }
 
-        [HttpPost]
-        public IActionResult AddWine(Wine wine)
-        {
-            _wineService.AddWine(wine);
-            return Ok(wine);
-        }
+       
 
         [HttpGet]
         public IActionResult GetWines()
         {
-            var wines = _wineService.GetAllWines();
-            return Ok(wines);
-        }
-
-        [HttpGet("{id}")]
-        public IActionResult GetWine(int id)
-        {
-            var wine = _wineService.GetWineById(id);
-            if (wine == null) return NotFound();
-            return Ok(wine);
-        }
-
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateWineStock(int id, [FromBody] int newStock)
-        {
-            await _wineService.UpdateWineStock(id, newStock);
-            return NoContent();
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<List<Wine>>> GetAllWines()
-        {
-            var wines = await _wineService.GetAllWines();
-            return wines.Select(w => new Wine
+            try
             {
-                Name = w.Name,
-                Variety = w.Variety,
-                Year = w.Year,
-                Region = w.Region,
-                Stock = w.Stock
-            }).ToList();
+                var wines = _wineService.GetAllWines();
+                return Ok(wines);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al obtener los vinos: {ex.Message}");
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddWine(Wine wineDto)
+        public IActionResult RegisterWine([FromBody] WineDTO wineDto)
         {
-            var wine = new Wine
-            {
-                Name = wineDto.Name,
-                Variety = wineDto.Variety,
-                Year = wineDto.Year,
-                Region = wineDto.Region,
-                Stock = wineDto.Stock
-            };
-            await _wineService.AddWine(wine);
-            return CreatedAtAction(nameof(GetAllWines), new { id = wine.Id }, wineDto);
+            _wineService.RegisterWine(wineDto);
+            return Ok("Wine registered successfully");
         }
+
+        [HttpGet("variety/{variety}")]
+        public IActionResult GetWinesByVariety(string variety)
+        {
+            var wines = _wineService.GetWineByVariety(variety);
+            if (!wines.Any()) return NotFound("No se encontraron vinos para la variedad indicada");
+            return Ok(wines);
+        }
+
+        [HttpGet("stock/{name}")]
+        public IActionResult GetStockByName(string name)
+        {
+            var wine = _wineService.GetWineByName(name);
+            if (wine == null) return NotFound("No se pudo encontrar ningún vino con el nombre indicado");
+            return Ok(new { wine.Name, wine.Stock });
+        }
+
+        [HttpPut("update-stock")]
+        public IActionResult UpdateStock([FromQuery] string name, [FromQuery] int newStock)
+        {
+            _wineService.UpdateStock(name, newStock);
+            return Ok("Stock updated successfully");
+        }
+
+
 
 
     }

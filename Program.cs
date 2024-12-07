@@ -1,16 +1,21 @@
 using Microsoft.Extensions.Configuration;
 using VineriaAPI.Data;
-using VineriaAPI.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Data.Repository;
+using Microsoft.EntityFrameworkCore;
+using Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<WineRepository>();
+builder.Services.AddScoped<WineRepository>();
 builder.Services.AddControllers();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("WineAPI"));
+
+// Configuración de DbContext con SQLite
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(
+    builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("VineriaAPI")));
+
 
 builder.Services.AddTransient<WineRepository>();
 
